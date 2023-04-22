@@ -1,0 +1,1 @@
+poetry run streamlit run web/Hello.py

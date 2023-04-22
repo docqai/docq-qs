@@ -1,5 +1,5 @@
 import pytest
-from poetry_demo import answer_brain_chain, answer_brain_agent
+from source import answer_brain_chain, answer_brain_agent
 
 
 SAMPLE_QUESTION = "Give me examples of new tools appearing in technology radar?"

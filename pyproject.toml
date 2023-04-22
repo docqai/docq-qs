@@ -1,13 +1,12 @@
 [tool.poetry]
-name = "poetry-demo"
+name = "docq-qs"
 version = "0.1.0"
-description = ""
+description = "Quickstart for Docq"
 authors = ["Chen Wang <dev@chenwang.org>"]
 readme = "README.md"
-packages = [{include = "poetry_demo"}]
+packages = [{include = "source"}]
 
 [tool.poetry.scripts]
-qs = "poetry_demo:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.9.7 || >3.9.7,<4.0"

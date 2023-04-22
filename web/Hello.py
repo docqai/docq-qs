@@ -1,6 +1,6 @@
 import streamlit as st
 import streamlit_authenticator as stauth
-from poetry_demo import answer_brain_chain, answer_brain_agent
+from source import answer_brain_chain, answer_brain_agent
 import yaml
 from yaml.loader import SafeLoader
 with open('staff.yaml') as file:
