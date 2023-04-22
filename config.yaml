@@ -1,0 +1,35 @@
+models:
+  all:
+    Private:
+      bloom: BLOOM
+      stablelm-alpha: StableLM (Alpha)
+    Public:
+      cohere: Cohere
+      openai: OpenAI (GPT-3.5-Turbo)
+  selected: openai
+sources:
+  all:
+    Cloud:
+      abs: Azure Blob Storage
+      gcs: GCP Cloud Storage
+      s3: Amazon S3
+    Desktop:
+      dropbox: Dropbox
+      gdrive: Google Drive
+      onedrive: OneDrive
+    SaaS:
+      blackboard: Blackboard
+      confluence: Confluence
+      git: Git
+  selected:
+  - s3
+tools:
+  all:
+    google: Google
+    math: Calculator
+    wikipedia: Wikipedia
+  enabled: true
+  selected:
+  - google
+  - math
+  - wikipedia

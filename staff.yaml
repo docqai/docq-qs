@@ -1,0 +1,14 @@
+credentials:
+  usernames:
+    joe:
+      email: joe@acme.com
+      name: Joe D
+      password: $2b$12$lfrnTi6ksXUo49kTBszllu4cLfy7.HLnCpZr.xJe.EWNK.trKyG0S
+    jane:
+      email: jane@acme.com
+      name: Jane C
+      password: $2b$12$PdBOxS3GDVVrOl4Iy/Sgj./xW/oV4RRqMnf.kh0E4.nswDY6O9yFq
+cookie:
+  expiry_days: 30
+  key: random_signature_key # Must be string
+  name: random_cookie_name
