@@ -1,5 +1,6 @@
 .vscode
 .pytest_cache
 .chroma
+.streamlit
 
 **/__pycache__/

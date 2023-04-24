@@ -45,8 +45,7 @@ def __store__():
 
         STORE = Chroma.from_documents(
             documents=splitter.split_documents(loader.load()),
-            embeddings=embeddings, 
-            # persist_directory='.chroma/persisted',
+            embeddings=embeddings,
         )
         
         print('Stored.')
