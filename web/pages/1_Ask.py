@@ -1,15 +1,11 @@
 import streamlit as st
-from source import answer_brain_chain, answer_brain_agent
-import yaml
-from yaml.loader import SafeLoader
+from source import answer_brain_chain, answer_brain_agent, init_envs, load_config
+
+init_envs()
+
+config = load_config()
 
 st.title("Hey Docq")
-
-config_file = 'config.yaml'
-config = {}
-with open(config_file) as file:
-    config = yaml.load(file, Loader=SafeLoader)
-
 
 st.subheader("Ask me anything")
 

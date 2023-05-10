@@ -1,14 +1,11 @@
 import streamlit as st
-import yaml
-from yaml.loader import SafeLoader
+from source import init_envs, load_config
+
+init_envs()
+
+config = load_config()
 
 st.title("Hey Docq")
-
-config_file = 'config.yaml'
-config = {}
-with open(config_file) as file:
-    config = yaml.load(file, Loader=SafeLoader)
-
 
 st.subheader("Let's chat (coming soon)")
 st.caption(f'Current model: {config["models"]["selected"]}')

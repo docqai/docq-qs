@@ -1,14 +1,11 @@
 import time
 import streamlit as st
 import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader, FullLoader
+from source import init_envs, load_config, save_config
 
-config_file = 'config.yaml'
-config = {}
+init_envs()
 
-with open(config_file) as file:
-    config = yaml.load(file, Loader=SafeLoader)
+config = load_config()
 
 authenticator = stauth.Authenticate(
     config['access']['credentials'],
@@ -27,9 +24,6 @@ elif authentication_status is None:
     st.warning("Please login")
 else:
 
-    with open(config_file) as file:
-        config = yaml.load(file, Loader=FullLoader)
-
     authenticator.logout('Logout', 'main')
     tab_sources, tab_settings, tab_access = st.tabs(["Data Sources", "Model/Tools Settings", "Access Control"])
 
@@ -41,7 +35,7 @@ else:
 
     def save_sources():
         config['sources']['selected'] = [k for (k, v) in sources.items() if v]
-        yaml.dump(config, open(config_file, 'w'))
+        save_config(config)
         success = tab_sources.success("Saved.")
         time.sleep(3)
         success.empty()
@@ -82,12 +76,12 @@ else:
             tools[k] = tab_settings_col_turbo.checkbox(v, key=k, value=k in config['tools']['selected'])
 
     def save_settings():
-        
+
         if model_public:
             config['models']['selected'] = model_public
         elif model_private:
             config['models']['selected'] = model_private
-        
+
         config['tools']['enabled'] = turbo_on
 
         if turbo_on:
@@ -95,7 +89,7 @@ else:
         else:
             config['tools']['selected'] = []
 
-        yaml.dump(config, open(config_file, 'w'))
+        save_config(config)
         success = tab_settings.success("Saved")
         time.sleep(3)
         success.empty()

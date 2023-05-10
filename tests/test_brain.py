@@ -1,6 +1,7 @@
 import pytest
-from source import answer_brain_chain, answer_brain_agent
+from source import answer_brain_chain, answer_brain_agent, init_envs
 
+init_envs()
 
 SAMPLE_QUESTION = "Give me examples of new tools appearing in technology radar?"
 
