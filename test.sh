@@ -1,1 +1,1 @@
-poetry run pytest
+poetry run pytest "$@"
