@@ -18,6 +18,7 @@ sources:
       gdrive: Google Drive
       onedrive: OneDrive
     SaaS:
+      notion: Notion
       blackboard: Blackboard
       confluence: Confluence
       git: Git
@@ -33,3 +34,14 @@ tools:
   - google
   - math
   - wikipedia
+access:
+  credentials:
+    usernames:
+      admin:
+        email: admin@acme.com
+        name: Admin Person
+        password: $2b$12$4ps73LGylcwHRUty9eV84uCULxqr7V1/ZNUQ53/h1Zv573CvEmiXS
+  cookie:
+    expiry_days: 30
+    key: docq_access_cookie
+    name: docq_access_cookie

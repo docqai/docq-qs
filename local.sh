@@ -1,1 +1,1 @@
-poetry run streamlit run web/Hello.py
+poetry run streamlit run web/Admin.py
