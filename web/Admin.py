@@ -1,21 +1,17 @@
 import time
 import streamlit as st
 import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader, FullLoader
+from source import init_envs, load_config, save_config
 
-access_files = {'admin': 'admin.yaml', 'staff': 'staff.yaml'}
-access = {}
+init_envs()
 
-for (k, v) in access_files.items():
-    with open(v) as file:
-        access[k] = yaml.load(file, Loader=SafeLoader)
+config = load_config()
 
 authenticator = stauth.Authenticate(
-    access['admin']['credentials'],
-    access['admin']['cookie']['name'],
-    access['admin']['cookie']['key'],
-    access['admin']['cookie']['expiry_days'],
+    config['access']['credentials'],
+    config['access']['cookie']['name'],
+    config['access']['cookie']['key'],
+    config['access']['cookie']['expiry_days'],
 )
 
 name, authentication_status, username = authenticator.login('Login', 'main')
@@ -28,11 +24,6 @@ elif authentication_status is None:
     st.warning("Please login")
 else:
 
-    config_file = 'config.yaml'
-    config = {}
-    with open(config_file) as file:
-        config = yaml.load(file, Loader=FullLoader)
-
     authenticator.logout('Logout', 'main')
     tab_sources, tab_settings, tab_access = st.tabs(["Data Sources", "Model/Tools Settings", "Access Control"])
 
@@ -40,11 +31,11 @@ else:
     for (k, v) in config['sources']['all'].items():
         tab_sources.subheader(k)
         for (kk, vv) in v.items():
-            sources[kk] = tab_sources.checkbox(vv, key=kk, value=kk in config['sources']['selected'])
+            sources[kk] = tab_sources.checkbox(vv, key=kk, value=kk in config['sources']['selected'], help=f'Configure {vv}:')
 
     def save_sources():
         config['sources']['selected'] = [k for (k, v) in sources.items() if v]
-        yaml.dump(config, open(config_file, 'w'))
+        save_config(config)
         success = tab_sources.success("Saved.")
         time.sleep(3)
         success.empty()
@@ -85,12 +76,12 @@ else:
             tools[k] = tab_settings_col_turbo.checkbox(v, key=k, value=k in config['tools']['selected'])
 
     def save_settings():
-        
+
         if model_public:
             config['models']['selected'] = model_public
         elif model_private:
             config['models']['selected'] = model_private
-        
+
         config['tools']['enabled'] = turbo_on
 
         if turbo_on:
@@ -98,22 +89,16 @@ else:
         else:
             config['tools']['selected'] = []
 
-        yaml.dump(config, open(config_file, 'w'))
+        save_config(config)
         success = tab_settings.success("Saved")
         time.sleep(3)
         success.empty()
 
-   
     tab_settings.button("Save Settings", key="save_settings", on_click=save_settings)
-
     tab_access_admin, tab_access_staff = tab_access.columns(2)
-
     tab_access_staff.subheader("Staff Access")
-
-    for (k, v) in access['staff']['credentials']['usernames'].items():
-        tab_access_staff.write(f' - {k}: [{v["name"]}](mailto:{v["email"]})')
 
     tab_access_admin.subheader("Admin Access")
 
-    for (k, v) in access['admin']['credentials']['usernames'].items():
+    for (k, v) in config['access']['credentials']['usernames'].items():
         tab_access_admin.write(f' - {k}: [{v["name"]}](mailto:{v["email"]})')

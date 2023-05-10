@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "docq-qs"
-version = "0.1.0"
+version = "0.0.1"
 description = "Quickstart for Docq"
 authors = ["Chen Wang <dev@chenwang.org>"]
 readme = "README.md"
