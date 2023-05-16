@@ -1,0 +1,127 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string"
+        },
+        "fileShareName": {
+            "type": "string"
+        },
+        "blobContainerName": {
+            "type": "string"
+        },
+        "containerGroupName": {
+            "type": "string"
+        },
+        "containerImage": {
+            "type": "string"
+        },
+        "cpu": {
+            "type": "int"
+        },
+        "mem": {
+            "type": "int"
+        },
+        "mount": {
+            "type": "string"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "supportsHttpsTrafficOnly": true
+            },
+            "resources": [
+                {
+                    "type": "fileServices/shares",
+                    "apiVersion": "2019-06-01",
+                    "name": "[concat('default/', parameters('fileShareName'))]",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ]
+                },
+                {
+                    "type": "blobServices/containers",
+                    "apiVersion": "2019-06-01",
+                    "name": "[concat('default/', parameters('blobContainerName'))]",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ],
+                    "properties": {
+                        "publicAccess": "None"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2021-03-01",
+            "name": "[parameters('containerGroupName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "containers": [
+                    {
+                        "name": "[parameters('containerGroupName')]",
+                        "properties": {
+                            "image": "[parameters('containerImage')]",
+                            "resources": {
+                                "requests": {
+                                    "cpu": "[parameters('cpu')]",
+                                    "memoryInGb": "[parameters('mem')]"
+                                }
+                            },
+                            "ports": [
+                                {
+                                  "protocol": "TCP",
+                                  "port": 8501
+                                }
+                            ],
+                            "volumeMounts": [
+                                {
+                                    "name": "azurefile",
+                                    "mountPath": "[parameters('mount')]"
+                                }
+                            ],
+                            "environmentVariables": [
+                                {
+                                    "name": "BLOB_CONNECTION_STRING",
+                                    "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2021-04-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]"
+                                },
+                                {
+                                    "name": "PERSIST_MOUNT_PATH",
+                                    "value": "[parameters('mount')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "osType": "Linux",
+                "restartPolicy": "OnFailure",
+                "volumes": [
+                    {
+                        "name": "azurefile",
+                        "azureFile": {
+                            "shareName": "[parameters('fileShareName')]",
+                            "storageAccountName": "[parameters('storageAccountName')]",
+                            "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2021-04-01').keys[0].value]"
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[parameters('storageAccountName')]"
+            ]
+        }
+    ]
+}

@@ -1,6 +1,8 @@
 .vscode
+.venv
 .pytest_cache
-.chroma
 .streamlit
 
 **/__pycache__/
+
+.persisted

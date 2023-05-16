@@ -1,0 +1,43 @@
+name: Provision Cloud Resources
+on:
+  workflow_dispatch:
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Login into Azure
+        if: ${{ vars.DOCQ_CLOUD_PROVIDER == 'azure' }}
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Login into AWS
+        if: ${{ vars.DOCQ_CLOUD_PROVIDER == 'aws' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.DOCQ_CLOUD_REGION }}
+      - name: Login into GCP
+        if: ${{ vars.DOCQ_CLOUD_PROVIDER == 'gcp' }}
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+      - name: Setup GCP
+        if: ${{ vars.DOCQ_CLOUD_PROVIDER == 'gcp' }}
+        uses: 'google-github-actions/setup-gcloud@v1'
+      - name: Run one-off provisioning
+        env:
+          CLOUD_PROVIDER: ${{ vars.DOCQ_CLOUD_PROVIDER }}
+          CLOUD_REGION: ${{ vars.DOCQ_CLOUD_REGION }}
+          CLOUD_PREFIX: ${{ vars.DOCQ_CLOUD_PREFIX }}
+        run: |
+          echo "Provisioning for ${CLOUD_PROVIDER} in ${CLOUD_REGION} using prefix ${CLOUD_PREFIX}" && \ 
+          ./deploy/${CLOUD_PROVIDER}/deploy.sh && \
+          echo "DONE" \
+          echo "Make sure to set the following secrets in your repository:"
+          echo "  - DOCQ_CLOUD_PROVIDER"
+          echo "  - DOCQ_CLOUD_REGION"
+          echo "  - DOCQ_CLOUD_PREFIX"
+      
