@@ -55,6 +55,11 @@ jobs:
       - name: Install project
         run: poetry install --no-interaction
       #----------------------------------------------
+      #              validate files
+      #----------------------------------------------
+      - name: Validate files
+        run: ./validate.sh
+      #----------------------------------------------
       #              run test suite
       #----------------------------------------------
       - name: Run tests
