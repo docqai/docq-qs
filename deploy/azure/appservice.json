@@ -38,10 +38,6 @@
             "type": "string",
             "defaultValue": "docqai"
         },
-        "dnsNameLabel": {
-            "type": "string",
-            "defaultValue": "[concat('docq-', uniqueString(resourceGroup().id))]"
-        },
         "mount": {
             "type": "string",
             "defaultValue": "./persisted"
@@ -130,7 +126,7 @@
                 "[parameters('cognitiveServiceName')]"
             ],
             "properties": {
-                "name": "[parameters('dnsNameLabel')]",
+                "name": "[parameters('appServiceName')]",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
                 "siteConfig": {
                     "appSettings": [
