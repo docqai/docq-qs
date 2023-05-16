@@ -33,7 +33,7 @@ def __store__():
     global STORE
     if STORE is None:
         
-        loader = PyPDFLoader(os.path.join(os.path.dirname(__file__), "../data.pdf"))
+        loader = PyPDFLoader(os.path.join(os.path.dirname(__file__), "../docs/data.pdf"))
 
         splitter = CharacterTextSplitter(
             chunk_size=1000,
