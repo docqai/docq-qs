@@ -2,6 +2,10 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "cognitiveServiceName": {
+            "type": "string",
+            "defaultValue": "[concat('cognitive', uniqueString(resourceGroup().id))]"
+        },
         "storageAccountName": {
             "type": "string",
             "defaultValue": "[concat('storage', uniqueString(resourceGroup().id))]"
@@ -22,17 +26,25 @@
             "type": "string",
             "defaultValue": "ghcr.io/docqai/docq-qs:latest"
         },
+        "dnsNameLabel": {
+            "type": "string",
+            "defaultValue": "[concat('docq-', uniqueString(resourceGroup().id))]"
+        },
         "cpu": {
             "type": "int",
-            "defaultValue": "2"
+            "defaultValue": 1
         },
         "mem": {
             "type": "int",
-            "defaultValue": "8"
+            "defaultValue": 4
         },
         "mount": {
             "type": "string",
             "defaultValue": "/mnt/persisted"
+        },
+        "ENV_OPENAI_API_KEY": {
+            "type": "securestring",
+            "defaultValue": "Generate it from OpenAI"
         }
     },
     "variables": {
@@ -73,6 +85,20 @@
             ]
         },
         {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2021-04-30",
+            "name": "[parameters('cognitiveServiceName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "OpenAI",
+            "sku": {
+                "name": "S0"
+            },
+            "properties": {},
+            "dependsOn": [
+                "[parameters('storageAccountName')]"
+            ]
+        },
+        {
             "type": "Microsoft.ContainerInstance/containerGroups",
             "apiVersion": "2021-03-01",
             "name": "[parameters('containerGroupName')]",
@@ -91,7 +117,7 @@
                             },
                             "ports": [
                                 {
-                                  "protocol": "TCP",
+                                  "protocol": "tcp",
                                   "port": 8501
                                 }
                             ],
@@ -109,12 +135,39 @@
                                 {
                                     "name": "PERSIST_MOUNT_PATH",
                                     "value": "[parameters('mount')]"
+                                },
+                                {
+                                    "name": "OPENAI_API_KEY",
+                                    "value": "[parameters('ENV_OPENAI_API_KEY')]"
+                                },
+                                {
+                                    "name": "AZURE_OPENAI_KEY_1",
+                                    "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).key1]"
+                                },
+                                {
+                                    "name": "AZURE_OPENAI_KEY_2",
+                                    "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).key2]"
+                                },
+                                {
+                                    "name": "AZURE_OPENAI_ENDPOINT",
+                                    "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).endpoint]"
                                 }
                             ]
                         }
                     }
                 ],
                 "osType": "Linux",
+                "ipAddress": {
+                    "type": "Public",
+                    "ports": [
+                        {
+                            "protocol": "tcp",
+                            "port": "80",
+                            "targetPort": 8501
+                        }
+                    ],
+                    "dnsNameLabel": "[parameters('dnsNameLabel')]"
+                },
                 "restartPolicy": "OnFailure",
                 "volumes": [
                     {
@@ -128,8 +181,19 @@
                 ]
             },
             "dependsOn": [
-                "[parameters('storageAccountName')]"
+                "[parameters('storageAccountName')]",
+                "[parameters('cognitiveServiceName)]"
             ]
         }
-    ]
+    ],
+    "outputs": {
+        "documentStorageSasToken": {
+            "type": "string",
+            "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01', {'signedServices': 'b', 'signedPermission': 'rw', 'signedResourceTypes': 'co', 'signedProtocol': 'https'}).accountSasToken]"
+        },
+        "applicationPublicDomainName": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ContainerInstance/containerGroups/', parameters('containerGroupName'))).ipAddress.fqdn]"
+        }
+    }
 }
