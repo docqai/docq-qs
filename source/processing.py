@@ -7,7 +7,7 @@ from langchain.agents.react.base import DocstoreExplorer
 from langchain.chains import SimpleSequentialChain, LLMMathChain, RetrievalQA, RetrievalQAWithSourcesChain
 from langchain.document_loaders import PyPDFLoader
 from langchain.indexes import VectorstoreIndexCreator
-from langchain.llms import OpenAI, Cohere, HuggingFaceHub
+from langchain.llms import OpenAI, AzureOpenAI, HuggingFaceHub
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.prompts.chat import (
@@ -52,15 +52,15 @@ def __store__():
         print('Stored.')
 
 def __llm__():
-    if CONFIG['sources']['selected'] == 'cohere':
-        return Cohere(
-            model_name="cohere/gpt3-small",
-            temperature=0,
+    if CONFIG['sources']['selected'] == 'azure-openai':
+        return AzureOpenAI(
+            model_name="gpt-3.5-turbo",
+            temperature=9,
         )
     else:
-        return ChatOpenAI(
+        return OpenAI(
             model_name="gpt-3.5-turbo",
-            temperature=0,
+            temperature=9,
         ) 
 
 def __org_data_prompt__():

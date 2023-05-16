@@ -11,9 +11,23 @@ RESOURCE_GROUP="${PREFIX}rg"
 STORAGE_ACCOUNT="${PREFIX}sa"
 BLOB_STORAGE_NAME="${PREFIX}blob"
 FILE_STORAGE_NAME="${PREFIX}file"
+CONTAINER_REGISTRY="${PREFIX}cr"
 CONTAINER_GROUP="${PREFIX}cg"
 
 az group create --name $RESOURCE_GROUP --location $LOCATION
 az configure --defaults group=$RESOURCE_GROUP location=$LOCATION
 
-az deployment group create --template-file template.json --parameters @azuredeploy.parameters.json
+az storage account create --name $STORAGE_ACCOUNT --sku Standard_LRS
+BLOB_STORAGE_CONNECTION_STRING=`az storage account show-connection-string --name $STORAGE_ACCOUNT --query connectionString --output tsv`
+
+echo $BLOB_STORAGE_CONNECTION_STRING
+
+az storage container create --name $BLOB_STORAGE_NAME --account-name $STORAGE_ACCOUNT --public-access off
+
+az storage share create --name $FILE_STORAGE_NAME --account-name $STORAGE_ACCOUNT --quota $FILESHARE_IN_GiB
+
+az acr create --name $CONTAINER_REGISTRY --sku Basic
+
+az container 
+
+# az deployment group create --template-file template.json --parameters @azuredeploy.parameters.json
