@@ -137,7 +137,7 @@
                         },
                         {
                             "name": "SERPER_API_KEY",
-                            "value": "[parameters('ENV_SERPER_API_KEY]"
+                            "value": "[parameters('ENV_SERPER_API_KEY')]"
                         }, 
                         {
                             "name": "PERSIST_MOUNT_PATH",
