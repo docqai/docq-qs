@@ -12,7 +12,10 @@ Introducing [Docq.AI](https://docq.ai):
 
 ## Deploy
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdocqai%2Fdocq-qs%2Fmain%2Fdeploy%2Fazure%2Ftemplate.json)
+### Azure
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdocqai%2Fdocq-qs%2Fmain%2Fdeploy%2Fazure%2Fappservice.json) - App Service
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdocqai%2Fdocq-qs%2Fmain%2Fdeploy%2Fazure%2Fcontainerinstances.json) - Container Instances
 
 
 ### Decide where to run the application

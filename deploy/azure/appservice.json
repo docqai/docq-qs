@@ -1,0 +1,162 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "cognitiveServiceName": {
+            "type": "string",
+            "defaultValue": "[concat('cognitive', uniqueString(resourceGroup().id))]"
+        },
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('storage', uniqueString(resourceGroup().id))]"
+        },
+        "appServicePlanName": {
+            "type": "string",
+            "defaultValue": "[concat('appserviceplan', uniqueString(resourceGroup().id))]"
+        },
+        "appServiceName": {
+            "type": "string",
+            "defaultValue": "[concat('app', uniqueString(resourceGroup().id))]"
+        },
+        "fileShareName": {
+            "type": "string",
+            "defaultValue": "fileshare"
+        },
+        "blobContainerName": {
+            "type": "string",
+            "defaultValue": "blobcontainer"
+        },
+        "containerImage": {
+            "type": "string",
+            "defaultValue": "ghcr.io/docqai/docq-qs:latest"
+        },
+        "dnsNameLabel": {
+            "type": "string",
+            "defaultValue": "[concat('docq-', uniqueString(resourceGroup().id))]"
+        },
+        "mount": {
+            "type": "string",
+            "defaultValue": "./persisted"
+        },
+        "ENV_OPENAI_API_KEY": {
+            "type": "securestring"
+        },
+        "ENV_SERPER_API_KEY": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "supportsHttpsTrafficOnly": true
+            },
+            "resources": [
+                {
+                    "type": "fileServices/shares",
+                    "apiVersion": "2019-06-01",
+                    "name": "[concat('default/', parameters('fileShareName'))]",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ]
+                },
+                {
+                    "type": "blobServices/containers",
+                    "apiVersion": "2019-06-01",
+                    "name": "[concat('default/', parameters('blobContainerName'))]",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ],
+                    "properties": {
+                        "publicAccess": "None"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2022-12-01",
+            "name": "[parameters('cognitiveServiceName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "OpenAI",
+            "sku": {
+                "name": "S0"
+            },
+            "properties": {},
+            "dependsOn": [
+                "[parameters('storageAccountName')]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('appServicePlanName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "P1v2"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('appServiceName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices/shares', parameters('storageAccountName'), concat('default/', parameters('fileShareName')))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                            "value": "false"
+                        },
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_URL",
+                            "value": "[parameters('containerImage')]"
+                        },
+                        {
+                            "name": "WEBSITES_PORT",
+                            "value": "8501" 
+                        },
+                        {
+                            "name": "OPENAI_API_KEY",
+                            "value": "[parameters('ENV_OPENAI_API_KEY')]"
+                        },
+                        {
+                            "name": "SERPER_API_KEY",
+                            "value": "[parameters('ENV_SERPER_API_KEY]"
+                        }, 
+                        {
+                            "name": "PERSIST_MOUNT_PATH",
+                            "value": "[parameters('mount')]"
+                        }
+                    ],
+                    "linuxFxVersion": "[concat('DOCKER|', parameters('containerImage'))]",
+                    "alwaysOn": true
+                },
+                "clientAffinityEnabled": false,
+                "virtualNetworkSubnetId": null,
+                "httpsOnly": true,
+                "publicNetworkAccess": "Enabled"
+            }
+        }
+    ],
+    "outputs": {
+        "applicationPublicDomainName": {
+            "type": "string",
+            "value": "[reference(concat('Microsoft.Web/sites/', parameters('appServiceName'))).defaultHostName]"
+        }
+    }
+}
