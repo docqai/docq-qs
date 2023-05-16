@@ -42,13 +42,9 @@
             "type": "string",
             "defaultValue": "/mnt/persisted"
         },
-        "now": {
-            "type": "string",
-            "defaultValue": "[utcNow('u')]"
-        },
         "tokenExpiry": {
             "type": "string",
-            "defaultValue": "[dateTimeAdd(parameters('now'), 'P3Y')]"
+            "defaultValue": "[dateTimeAdd(utcNow('u'), 'P3Y')]"
         },
         "ENV_OPENAI_API_KEY": {
             "type": "securestring",
