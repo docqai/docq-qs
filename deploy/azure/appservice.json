@@ -113,11 +113,15 @@
             "tags": {},
             "dependsOn": [],
             "properties": {
+                "name": "[parameters('appServicePlanName')]",
+                "workerSize": "0",
+                "workerSizeId": "0",
                 "numberOfWorkers": "1",
                 "reserved": true,
                 "zoneRedundant": false
             },
             "sku": {
+                "tier": "PremiumV2",
                 "name": "P1v2"
             }
         },
@@ -132,6 +136,7 @@
                 "[parameters('cognitiveServiceName')]"
             ],
             "properties": {
+                "name": "[parameters('dnsNameLabel')]",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
                 "siteConfig": {
                     "appSettings": [
@@ -169,7 +174,8 @@
                         }
                     ],
                     "linuxFxVersion": "[parameters('linuxFxVersion')]",
-                    "alwaysOn": true
+                    "alwaysOn": true,
+                    "appCommandLine": ""
                 },
                 "clientAffinityEnabled": false,
                 "virtualNetworkSubnetId": null,
