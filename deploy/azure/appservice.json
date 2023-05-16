@@ -45,12 +45,6 @@
         "mount": {
             "type": "string",
             "defaultValue": "./persisted"
-        },
-        "ENV_OPENAI_API_KEY": {
-            "type": "securestring"
-        },
-        "ENV_SERPER_API_KEY": {
-            "type": "securestring"
         }
     },
     "variables": {
@@ -161,13 +155,17 @@
                             "value": "8501" 
                         },
                         {
-                            "name": "OPENAI_API_KEY",
-                            "value": "[parameters('ENV_OPENAI_API_KEY')]"
+                            "name": "AZURE_OPENAI_KEY1",
+                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName')), '2022-12-01').key1]"
                         },
                         {
-                            "name": "SERPER_API_KEY",
-                            "value": "[parameters('ENV_SERPER_API_KEY')]"
-                        }, 
+                            "name": "AZURE_OPENAI_KEY2",
+                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName')), '2022-12-01').key2]"
+                        },
+                        {
+                            "name": "AZURE_OPENAI_ENDPOINT",
+                            "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).endpoint]"
+                        },
                         {
                             "name": "PERSIST_MOUNT_PATH",
                             "value": "[parameters('mount')]"

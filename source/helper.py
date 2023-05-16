@@ -15,7 +15,8 @@ def init_envs():
         os.environ['OPENAI_API_KEY'] = os.environ['AZURE_OPENAI_KEY1']
         # os.environ['OPENAI_API_KEY'] = os.environ['AZURE_OPENAI_KEY2']
 
-    for k in ['OPENAI_API_KEY', 'SERPER_API_KEY', 'PERSIST_MOUNT_PATH']:
+    # for k in ['OPENAI_API_KEY', 'SERPER_API_KEY', 'PERSIST_MOUNT_PATH']:
+    for k in ['PERSIST_MOUNT_PATH']:
         if k not in os.environ:
             os.environ[k] = st.secrets['langchain'][k]
 
