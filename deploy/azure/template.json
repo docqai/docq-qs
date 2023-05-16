@@ -3,28 +3,36 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "storageAccountName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "[concat('storage', uniqueString(resourceGroup().id))]"
         },
         "fileShareName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "fileshare"
         },
         "blobContainerName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "blobcontainer"
         },
         "containerGroupName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "[concat('container', uniqueString(resourceGroup().id))]"
         },
         "containerImage": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "ghcr.io/docqai/docq-qs:latest"
         },
         "cpu": {
-            "type": "int"
+            "type": "int",
+            "defaultValue": "2"
         },
         "mem": {
-            "type": "int"
+            "type": "int",
+            "defaultValue": "8"
         },
         "mount": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "/mnt/persisted"
         }
     },
     "variables": {
