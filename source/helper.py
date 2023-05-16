@@ -8,8 +8,9 @@ CONFIG_FILE = 'config.yaml'
 
 
 def init_envs():
-    for k in ['OPENAI_API_KEY', 'COHERE_API_KEY', 'SERPER_API_KEY']:
-        os.environ[k] = st.secrets['langchain'][k]
+    for k in ['OPENAI_API_KEY', 'COHERE_API_KEY', 'SERPER_API_KEY', 'PERSIST_MOUNT_PATH']:
+        if k not in os.environ:
+            os.environ[k] = st.secrets['langchain'][k]
 
 
 def load_config():
