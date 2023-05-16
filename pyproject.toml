@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "docq-qs"
 version = "0.0.1"
+license = "AGPL-3.0-or-later"
 description = "Quickstart for Docq"
-authors = ["Chen Wang <dev@chenwang.org>"]
+authors = ["Docq Team <hi@docq.ai>"]
 readme = "README.md"
 packages = [{include = "source"}]
 
