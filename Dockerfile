@@ -10,7 +10,7 @@ RUN pip install --upgrade pip && \
 
 COPY . /app
 
-RUN poetry config virtualenvs.in-project true
+RUN poetry config virtualenvs.create false
 RUN poetry install --no-interaction --only main
 
 CMD ./run.sh

@@ -3,6 +3,13 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - source/**
+      - tests/**
+      - web/**
+      - *.toml
+      - *.yaml
+      - .github/workflows/build.yml
 jobs:
   build:
     runs-on: ubuntu-latest
