@@ -52,9 +52,21 @@
         },
         "dockerRegistryStartupCommand": {
             "value": ""
-        }, 
+        },
         "containerWebsitePort": {
             "value": "8501"
+        },
+        "openApiKey": {
+            "value": ""
+        },
+        "cohereApiKey": {
+            "value": ""
+        },
+        "serperApiKey": {
+            "value": ""
+        },
+        "persistMountPath": {
+            "value": ""
         }
     }
 }

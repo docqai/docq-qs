@@ -53,9 +53,24 @@
         "dockerRegistryStartupCommand": {
             "type": "string"
         }, 
+        "containerWebsitePort": {
+            "type": "string"
+        },
         "openApiKey": {
             "type": "securestring",
             "defaultValue": "API Key for OpenAPI. Generate it from OpenAI or Azure"
+        }, 
+        "cohereApiKey": {
+            "type": "securestring",
+            "defaultValue": ""
+        }, 
+        "serperApiKey": {
+            "type": "securestring",
+            "defaultValue": ""
+        }, 
+        "persistMountPath": {
+            "type": "securestring",
+            "defaultValue": ""
         }
     },
     "variables": {},
@@ -111,8 +126,20 @@
                             "defaultValue": "80"
                         }, 
                         {
-                            "name": "ENV_OPENAI_API_KEY",
+                            "name": "OPENAI_API_KEY",
                             "value": "[parameters('openApiKey')]"
+                        }, 
+                        {
+                            "name": "COHERE_API_KEY",
+                            "value": "[parameters('cohereApiKey')]"
+                        }, 
+                        {
+                            "name": "SERPER_API_KEY",
+                            "value": "[parameters('serperApiKey')]"
+                        }, 
+                        {
+                            "name": "PERSIST_MOUNT_PATH",
+                            "value": "[parameters('persistMountPath')]"
                         }
                     ],
                     "linuxFxVersion": "[parameters('linuxFxVersion')]",
@@ -152,7 +179,7 @@
             "apiVersion": "2020-02-02-preview",
             "name": "ja-test-app-docq-1",
             "type": "microsoft.insights/components",
-            "location": "westeurope",
+            "location": "[parameters('location')]",
             "tags": null,
             "dependsOn": [
                 "newWorkspaceTemplate"
@@ -183,7 +210,7 @@
                             "apiVersion": "2020-08-01",
                             "name": "DefaultWorkspace-64ea0343-34be-47b6-a565-547003ed0eb3-WEU",
                             "type": "Microsoft.OperationalInsights/workspaces",
-                            "location": "westeurope",
+                            "location": "[parameters('location')]",
                             "properties": {}
                         }
                     ]
