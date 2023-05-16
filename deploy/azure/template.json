@@ -146,11 +146,11 @@
                                 },
                                 {
                                     "name": "AZURE_OPENAI_KEY_1",
-                                    "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).key1]"
+                                    "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).key1]"
                                 },
                                 {
                                     "name": "AZURE_OPENAI_KEY_2",
-                                    "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).key2]"
+                                    "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).key2]"
                                 },
                                 {
                                     "name": "AZURE_OPENAI_ENDPOINT",
