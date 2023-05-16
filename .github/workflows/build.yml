@@ -6,6 +6,7 @@ on:
     paths:
       - 'source/**'
       - 'tests/**'
+      - 'docs/**'
       - 'web/**'
       - '*.toml'
       - '*.yaml'
@@ -54,6 +55,11 @@ jobs:
       #----------------------------------------------
       - name: Install project
         run: poetry install --no-interaction
+      #----------------------------------------------
+      #              validate files
+      #----------------------------------------------
+      - name: Validate files
+        run: ./validate.sh
       #----------------------------------------------
       #              run test suite
       #----------------------------------------------

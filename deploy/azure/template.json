@@ -182,7 +182,7 @@
             },
             "dependsOn": [
                 "[parameters('storageAccountName')]",
-                "[parameters('cognitiveServiceName)]"
+                "[parameters('cognitiveServiceName')]"
             ]
         }
     ],

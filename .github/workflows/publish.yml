@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'deploy/**'
+      - 'docs/**'
+      - 'tests/**'
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
