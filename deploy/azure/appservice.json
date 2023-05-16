@@ -26,9 +26,13 @@
             "type": "string",
             "defaultValue": "blobcontainer"
         },
-        "containerImage": {
+        "linuxFxVersion": {
             "type": "string",
-            "defaultValue": "ghcr.io/docqai/docq-qs:latest"
+            "defaultValue": "DOCKER|ghcr.io/docqai/docq-qs:latest"
+        },
+        "registryHost": {
+            "type": "string",
+            "defaultValue": "https://ghcr.io"
         },
         "dnsNameLabel": {
             "type": "string",
@@ -125,7 +129,7 @@
                         },
                         {
                             "name": "DOCKER_REGISTRY_SERVER_URL",
-                            "value": "[parameters('containerImage')]"
+                            "value": "[parameters('registryHost')]"
                         },
                         {
                             "name": "WEBSITES_PORT",
@@ -144,7 +148,7 @@
                             "value": "[parameters('mount')]"
                         }
                     ],
-                    "linuxFxVersion": "[concat('DOCKER|', parameters('containerImage'))]",
+                    "linuxFxVersion": "[parameters('linuxFxVersion')]",
                     "alwaysOn": true
                 },
                 "clientAffinityEnabled": false,
