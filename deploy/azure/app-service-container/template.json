@@ -140,7 +140,12 @@
                         {
                             "name": "PERSIST_MOUNT_PATH",
                             "value": "[parameters('persistMountPath')]"
+                        },
+                        {
+                            "name": "WEBSITE_HTTPLOGGING_RETENTION_DAYS",
+                            "value": "1"
                         }
+                        
                     ],
                     "linuxFxVersion": "[parameters('linuxFxVersion')]",
                     "appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
