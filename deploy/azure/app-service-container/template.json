@@ -82,29 +82,12 @@
             "location": "[parameters('location')]",
             "tags": {},
             "dependsOn": [
-                "microsoft.insights/components/ja-test-app-docq-1",
                 "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
             ],
             "properties": {
                 "name": "[parameters('name')]",
                 "siteConfig": {
                     "appSettings": [
-                        {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference('microsoft.insights/components/ja-test-app-docq-1', '2015-05-01').InstrumentationKey]"
-                        },
-                        {
-                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                            "value": "[reference('microsoft.insights/components/ja-test-app-docq-1', '2015-05-01').ConnectionString]"
-                        },
-                        {
-                            "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
-                            "value": "~3"
-                        },
-                        {
-                            "name": "XDT_MicrosoftApplicationInsights_Mode",
-                            "value": "Recommended"
-                        },
                         {
                             "name": "DOCKER_REGISTRY_SERVER_URL",
                             "value": "[parameters('dockerRegistryUrl')]"
@@ -178,48 +161,6 @@
             "sku": {
                 "Tier": "[parameters('sku')]",
                 "Name": "[parameters('skuCode')]"
-            }
-        },
-        {
-            "apiVersion": "2020-02-02-preview",
-            "name": "ja-test-app-docq-1",
-            "type": "microsoft.insights/components",
-            "location": "[parameters('location')]",
-            "tags": null,
-            "dependsOn": [
-                "newWorkspaceTemplate"
-            ],
-            "properties": {
-                "ApplicationId": "[parameters('name')]",
-                "Request_Source": "IbizaWebAppExtensionCreate",
-                "Flow_Type": "Redfield",
-                "Application_Type": "web",
-                "WorkspaceResourceId": "/subscriptions/64ea0343-34be-47b6-a565-547003ed0eb3/resourceGroups/DefaultResourceGroup-WEU/providers/Microsoft.OperationalInsights/workspaces/DefaultWorkspace-64ea0343-34be-47b6-a565-547003ed0eb3-WEU"
-            }
-        },
-        {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
-            "name": "newWorkspaceTemplate",
-            "resourceGroup": "docq11-rg",
-            "subscriptionId": "[parameters('subscriptionId')]",
-            "properties": {
-                "mode": "Incremental",
-                "template": {
-                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "parameters": {},
-                    "variables": {},
-                    "resources": [
-                        {
-                            "apiVersion": "2020-08-01",
-                            "name": "DefaultWorkspace-64ea0343-34be-47b6-a565-547003ed0eb3-WEU",
-                            "type": "Microsoft.OperationalInsights/workspaces",
-                            "location": "[parameters('location')]",
-                            "properties": {}
-                        }
-                    ]
-                }
             }
         }
     ]
