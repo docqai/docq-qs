@@ -191,10 +191,6 @@
         }
     ],
     "outputs": {
-        "documentStorageSasToken": {
-            "type": "string",
-            "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01', {'signedServices': 'b', 'signedPermission': 'rw', 'signedExpiry': parameters('tokenExpiry'), 'signedResourceTypes': 'co', 'signedProtocol': 'https'}).accountSasToken]"
-        },
         "applicationPublicDomainName": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.ContainerInstance/containerGroups/', parameters('containerGroupName'))).ipAddress.fqdn]"
