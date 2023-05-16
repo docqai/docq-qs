@@ -161,8 +161,7 @@
                     "ports": [
                         {
                             "protocol": "tcp",
-                            "port": "80",
-                            "targetPort": 8501
+                            "port": "8501"
                         }
                     ],
                     "dnsNameLabel": "[parameters('dnsNameLabel')]"
