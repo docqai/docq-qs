@@ -42,14 +42,20 @@
             "type": "string",
             "defaultValue": "/mnt/persisted"
         },
+        "now": {
+            "type": "string",
+            "defaultValue": "[utcNow('u)]"
+        },
+        "tokenExpiry": {
+            "type": "string",
+            "defaultValue": "[dateTimeAdd(parameters('now'), 'P3Y')]"
+        },
         "ENV_OPENAI_API_KEY": {
             "type": "securestring",
             "defaultValue": "Generate it from OpenAI"
         }
     },
     "variables": {
-        "baseTime": "[utcNow('u')]",
-        "tokenExpiry": "[dateTimeAdd(variables('baseTime'), 'P3Y')]"
     },
     "resources": [
         {
@@ -191,7 +197,7 @@
     "outputs": {
         "documentStorageSasToken": {
             "type": "string",
-            "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01', {'signedServices': 'b', 'signedPermission': 'rw', 'signedExpiry': variables('tokenExpiry'), 'signedResourceTypes': 'co', 'signedProtocol': 'https'}).accountSasToken]"
+            "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01', {'signedServices': 'b', 'signedPermission': 'rw', 'signedExpiry': parameters('tokenExpiry'), 'signedResourceTypes': 'co', 'signedProtocol': 'https'}).accountSasToken]"
         },
         "applicationPublicDomainName": {
             "type": "string",
