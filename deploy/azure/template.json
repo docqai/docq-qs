@@ -44,7 +44,7 @@
         },
         "now": {
             "type": "string",
-            "defaultValue": "[utcNow('u)]"
+            "defaultValue": "[utcNow('u')]"
         },
         "tokenExpiry": {
             "type": "string",
