@@ -1,10 +1,10 @@
 models:
   all:
     Private:
-      bloom: BLOOM
       stablelm-alpha: StableLM (Alpha)
+      gpt4all: GPT4All
+      azure-openai: Azure OpenAI (GPT-3.5-Turbo)
     Public:
-      cohere: Cohere
       openai: OpenAI (GPT-3.5-Turbo)
   selected: openai
 sources:

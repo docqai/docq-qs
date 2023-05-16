@@ -1,0 +1,191 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "cognitiveServiceName": {
+            "type": "string",
+            "defaultValue": "[concat('cognitive', uniqueString(resourceGroup().id))]"
+        },
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('storage', uniqueString(resourceGroup().id))]"
+        },
+        "appServicePlanName": {
+            "type": "string",
+            "defaultValue": "[concat('appserviceplan', uniqueString(resourceGroup().id))]"
+        },
+        "appServiceName": {
+            "type": "string",
+            "defaultValue": "[concat('app', uniqueString(resourceGroup().id))]"
+        },
+        "fileShareName": {
+            "type": "string",
+            "defaultValue": "fileshare"
+        },
+        "blobContainerName": {
+            "type": "string",
+            "defaultValue": "blobcontainer"
+        },
+        "linuxFxVersion": {
+            "type": "string",
+            "defaultValue": "DOCKER|ghcr.io/docqai/docq-qs:latest"
+        },
+        "registryHost": {
+            "type": "string",
+            "defaultValue": "https://ghcr.io"
+        },
+        "registryUser": {
+            "type": "string",
+            "defaultValue": "docqai"
+        },
+        "dnsNameLabel": {
+            "type": "string",
+            "defaultValue": "[concat('docq-', uniqueString(resourceGroup().id))]"
+        },
+        "mount": {
+            "type": "string",
+            "defaultValue": "./persisted"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "supportsHttpsTrafficOnly": true
+            },
+            "resources": [
+                {
+                    "type": "fileServices/shares",
+                    "apiVersion": "2019-06-01",
+                    "name": "[concat('default/', parameters('fileShareName'))]",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ]
+                },
+                {
+                    "type": "blobServices/containers",
+                    "apiVersion": "2019-06-01",
+                    "name": "[concat('default/', parameters('blobContainerName'))]",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ],
+                    "properties": {
+                        "publicAccess": "None"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2022-12-01",
+            "name": "[parameters('cognitiveServiceName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "OpenAI",
+            "sku": {
+                "name": "S0"
+            },
+            "properties": {},
+            "dependsOn": [
+                "[parameters('storageAccountName')]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('appServicePlanName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "linux",
+            "tags": {},
+            "dependsOn": [],
+            "properties": {
+                "name": "[parameters('appServicePlanName')]",
+                "workerSize": "0",
+                "workerSizeId": "0",
+                "numberOfWorkers": "1",
+                "reserved": true,
+                "zoneRedundant": false
+            },
+            "sku": {
+                "tier": "PremiumV2",
+                "name": "P1v2"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('appServiceName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+                "[parameters('storageAccountName')]",
+                "[parameters('cognitiveServiceName')]"
+            ],
+            "properties": {
+                "name": "[parameters('dnsNameLabel')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                            "value": "false"
+                        },
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_URL",
+                            "value": "[parameters('registryHost')]"
+                        },
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                            "value": "[parameters('registryUser')]"
+                        },
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                            "value": ""
+                        },
+                        {
+                            "name": "WEBSITES_PORT",
+                            "value": "8501" 
+                        },
+                        {
+                            "name": "AZURE_OPENAI_KEY1",
+                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName')), '2022-12-01').key1]"
+                        },
+                        {
+                            "name": "AZURE_OPENAI_KEY2",
+                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName')), '2022-12-01').key2]"
+                        },
+                        {
+                            "name": "AZURE_OPENAI_ENDPOINT",
+                            "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).endpoint]"
+                        },
+                        {
+                            "name": "PERSIST_MOUNT_PATH",
+                            "value": "[parameters('mount')]"
+                        }
+                    ],
+                    "linuxFxVersion": "[parameters('linuxFxVersion')]",
+                    "alwaysOn": true,
+                    "appCommandLine": ""
+                },
+                "clientAffinityEnabled": false,
+                "virtualNetworkSubnetId": null,
+                "httpsOnly": true,
+                "publicNetworkAccess": "Enabled"
+            }
+        }
+    ],
+    "outputs": {
+        "applicationPublicDomainName": {
+            "type": "string",
+            "value": "[reference(concat('Microsoft.Web/sites/', parameters('appServiceName'))).defaultHostName]"
+        }
+    }
+}

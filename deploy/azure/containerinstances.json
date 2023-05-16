@@ -41,14 +41,6 @@
         "mount": {
             "type": "string",
             "defaultValue": "/mnt/persisted"
-        },
-        "tokenExpiry": {
-            "type": "string",
-            "defaultValue": "[dateTimeAdd(utcNow('u'), 'P3Y')]"
-        },
-        "ENV_OPENAI_API_KEY": {
-            "type": "securestring",
-            "defaultValue": "Generate it from OpenAI"
         }
     },
     "variables": {
@@ -90,7 +82,7 @@
         },
         {
             "type": "Microsoft.CognitiveServices/accounts",
-            "apiVersion": "2021-04-30",
+            "apiVersion": "2022-12-01",
             "name": "[parameters('cognitiveServiceName')]",
             "location": "[resourceGroup().location]",
             "kind": "OpenAI",
@@ -141,16 +133,12 @@
                                     "value": "[parameters('mount')]"
                                 },
                                 {
-                                    "name": "OPENAI_API_KEY",
-                                    "value": "[parameters('ENV_OPENAI_API_KEY')]"
+                                    "name": "AZURE_OPENAI_KEY1",
+                                    "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName')), '2022-12-01').key1]"
                                 },
                                 {
-                                    "name": "AZURE_OPENAI_KEY_1",
-                                    "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).key1]"
-                                },
-                                {
-                                    "name": "AZURE_OPENAI_KEY_2",
-                                    "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).key2]"
+                                    "name": "AZURE_OPENAI_KEY2",
+                                    "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName')), '2022-12-01').key2]"
                                 },
                                 {
                                     "name": "AZURE_OPENAI_ENDPOINT",
@@ -166,8 +154,7 @@
                     "ports": [
                         {
                             "protocol": "tcp",
-                            "port": "80",
-                            "targetPort": 8501
+                            "port": "8501"
                         }
                     ],
                     "dnsNameLabel": "[parameters('dnsNameLabel')]"
