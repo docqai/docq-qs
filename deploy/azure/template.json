@@ -48,6 +48,8 @@
         }
     },
     "variables": {
+        "baseTime": "[utcNow('u')]",
+        "tokenExpiry": "[dateTimeAdd(variables('baseTime'), 'P3Y')]"
     },
     "resources": [
         {
@@ -189,7 +191,7 @@
     "outputs": {
         "documentStorageSasToken": {
             "type": "string",
-            "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01', {'signedServices': 'b', 'signedPermission': 'rw', 'signedResourceTypes': 'co', 'signedProtocol': 'https'}).accountSasToken]"
+            "value": "[listAccountSas(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01', {'signedServices': 'b', 'signedPermission': 'rw', 'signedExpiry': variables('tokenExpiry'), 'signedResourceTypes': 'co', 'signedProtocol': 'https'}).accountSasToken]"
         },
         "applicationPublicDomainName": {
             "type": "string",
