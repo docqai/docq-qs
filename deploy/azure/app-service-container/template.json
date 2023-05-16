@@ -52,6 +52,10 @@
         },
         "dockerRegistryStartupCommand": {
             "type": "string"
+        }, 
+        "openApiKey": {
+            "type": "securestring",
+            "defaultValue": "API Key for OpenAPI. Generate it from OpenAI or Azure"
         }
     },
     "variables": {},
@@ -105,6 +109,10 @@
                             "name": "WEBSITES_PORT",
                             "value": "[parameters('containerWebsitePort')]",
                             "defaultValue": "80"
+                        }, 
+                        {
+                            "name": "ENV_OPENAI_API_KEY",
+                            "value": "[parameters('openApiKey')]"
                         }
                     ],
                     "linuxFxVersion": "[parameters('linuxFxVersion')]",
