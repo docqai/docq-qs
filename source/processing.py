@@ -8,7 +8,7 @@ from langchain.chains import SimpleSequentialChain, LLMMathChain, RetrievalQA, R
 from langchain.document_loaders import PyPDFLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.llms import OpenAI, AzureOpenAI, HuggingFaceHub
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.prompts.chat import (
     ChatPromptTemplate,
@@ -53,15 +53,16 @@ def __store__():
 
 def __llm__():
     if CONFIG['sources']['selected'] == 'azure-openai':
-        return AzureOpenAI(
+        return AzureChatOpenAI(
+            deployment_name='docq-gpt-35-turbo',
             model_name="gpt-3.5-turbo",
             temperature=9,
         )
     else:
-        return OpenAI(
+        return ChatOpenAI(
             model_name="gpt-3.5-turbo",
             temperature=9,
-        ) 
+        )
 
 def __org_data_prompt__():
 
