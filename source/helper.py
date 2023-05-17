@@ -1,4 +1,5 @@
 import os
+import logging
 import streamlit as st
 import yaml
 from yaml.loader import SafeLoader
@@ -17,7 +18,10 @@ def init_envs():
 
     for k in ['OPENAI_API_KEY', 'SERPER_API_KEY', 'PERSIST_MOUNT_PATH']:
         if k not in os.environ:
-            os.environ[k] = st.secrets['langchain'][k]
+            if k in st.secrets['langchain']:
+                os.environ[k] = st.secrets['langchain'][k]
+            else:
+                logging.error(f'Environment variable {k} not set.')
 
 
 def load_config():
