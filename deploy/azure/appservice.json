@@ -38,9 +38,19 @@
             "type": "string",
             "defaultValue": "docqai"
         },
+        "dnsNameLabel": {
+            "type": "string",
+            "defaultValue": "[concat('docq-', uniqueString(resourceGroup().id))]"
+        },
         "mount": {
             "type": "string",
             "defaultValue": "./persisted"
+        },
+        "ENV_OPENAI_API_KEY": {
+            "type": "securestring"
+        },
+        "ENV_SERPER_API_KEY": {
+            "type": "securestring"
         }
     },
     "variables": {
@@ -126,7 +136,7 @@
                 "[parameters('cognitiveServiceName')]"
             ],
             "properties": {
-                "name": "[parameters('appServiceName')]",
+                "name": "[parameters('dnsNameLabel')]",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
                 "siteConfig": {
                     "appSettings": [
@@ -151,6 +161,18 @@
                             "value": "8501" 
                         },
                         {
+                            "name": "OPENAI_API_KEY",
+                            "value": "[parameters('ENV_OPENAI_API_KEY')]"
+                        },
+                        {
+                            "name": "SERPER_API_KEY",
+                            "value": "[parameters('ENV_SERPER_API_KEY')]"
+                        }, 
+                        {
+                            "name": "PERSIST_MOUNT_PATH",
+                            "value": "[parameters('mount')]"
+                        },
+                        {
                             "name": "AZURE_OPENAI_KEY1",
                             "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName')), '2022-12-01').key1]"
                         },
@@ -161,10 +183,6 @@
                         {
                             "name": "AZURE_OPENAI_ENDPOINT",
                             "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('cognitiveServiceName'))).endpoint]"
-                        },
-                        {
-                            "name": "PERSIST_MOUNT_PATH",
-                            "value": "[parameters('mount')]"
                         }
                     ],
                     "linuxFxVersion": "[parameters('linuxFxVersion')]",

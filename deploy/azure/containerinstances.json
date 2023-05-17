@@ -41,6 +41,12 @@
         "mount": {
             "type": "string",
             "defaultValue": "/mnt/persisted"
+        },
+        "ENV_OPENAI_API_KEY": {
+            "type": "securestring"
+        },
+        "ENV_SERPER_API_KEY": {
+            "type": "securestring"
         }
     },
     "variables": {
@@ -131,6 +137,14 @@
                                 {
                                     "name": "PERSIST_MOUNT_PATH",
                                     "value": "[parameters('mount')]"
+                                },
+                                {
+                                    "name": "OPENAI_API_KEY",
+                                    "value": "[parameters('ENV_OPENAI_API_KEY')]"
+                                },
+                                {
+                                    "name": "SERPER_API_KEY",
+                                    "value": "[parameters('ENV_SERPER_API_KEY')]"
                                 },
                                 {
                                     "name": "AZURE_OPENAI_KEY1",
