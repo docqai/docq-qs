@@ -12,11 +12,11 @@
         },
         "appServicePlanName": {
             "type": "string",
-            "defaultValue": "[concat('appserviceplan', uniqueString(resourceGroup().id))]"
+            "defaultValue": "[concat('asp', uniqueString(resourceGroup().id))]"
         },
         "appServiceName": {
             "type": "string",
-            "defaultValue": "[concat('app', uniqueString(resourceGroup().id))]"
+            "defaultValue": "[concat('docq', uniqueString(resourceGroup().id))]"
         },
         "fileShareName": {
             "type": "string",
@@ -34,13 +34,12 @@
             "type": "string",
             "defaultValue": "https://ghcr.io"
         },
-        "registryUser": {
+        "sku": {
             "type": "string",
-            "defaultValue": "docqai"
-        },
-        "dnsNameLabel": {
-            "type": "string",
-            "defaultValue": "[concat('docq-', uniqueString(resourceGroup().id))]"
+            "defaultValue": "B1",
+            "allowedValues": [
+                "F1", "B1", "B2", "B3", "S1", "S2", "P1", "P2"
+            ]
         },
         "mount": {
             "type": "string",
@@ -121,8 +120,7 @@
                 "zoneRedundant": false
             },
             "sku": {
-                "tier": "PremiumV2",
-                "name": "P1v2"
+                "name": "[parameters('sku')]"
             }
         },
         {
@@ -147,14 +145,6 @@
                         {
                             "name": "DOCKER_REGISTRY_SERVER_URL",
                             "value": "[parameters('registryHost')]"
-                        },
-                        {
-                            "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                            "value": "[parameters('registryUser')]"
-                        },
-                        {
-                            "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                            "value": ""
                         },
                         {
                             "name": "WEBSITES_PORT",
