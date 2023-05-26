@@ -1,17 +1,14 @@
-# Welcome to your CDK TypeScript project
+# Infra to deploy DocqAI on AWS
 
-This is a blank project for CDK development with TypeScript.
+This CDK project deploys an instance of DocqAI to AWS.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+This CDK project is design to also generate a CloudFormation template that we can use with a LaunchStack URL.
 
-## Useful commands
+## LaunchStack URL 
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+- `cdk synth`
+- 
+
 
 ## Publish to AWS ECR Public
 
