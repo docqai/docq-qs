@@ -169,55 +169,35 @@ export class DocqStack extends cdk.Stack {
 
     const asset = new assets.Asset(this, 'DockerRunAwsJsonZip', { // uploads into a CDK assets bucket
       path: path.join(__dirname, props?.containerConfigFolder || "dockerrun"),
-      
+
     });
 
 
     const appVersionLabel = `${appName}-v1.0.0`;
-    const frontendAppVersion = new elasticbeanstalk.CfnApplicationVersion(this, 'AppVersion', {
+    const frontendAppVersion = new elasticbeanstalk.CfnApplicationVersion(this, 'AppVersionFrontend', {
       applicationName: frontendApp.ref,
       sourceBundle: {
         s3Bucket: asset.bucket.bucketName,
         //s3Key: `apps/${appName}/Dockerrun.aws.json`,
         s3Key: `${asset.s3ObjectKey}`,
       },
-      
+
     });
-
-    const frontendAppVersion2 = new elasticbeanstalk.CfnApplicationVersion(this, 'AppVersion2', {
-      applicationName: frontendApp.ref,
-      sourceBundle: {
-        s3Bucket: asset.bucket.bucketName,
-        //s3Key: `apps/${appName}/Dockerrun.aws.json`,
-        s3Key: `${asset.s3ObjectKey}`,
-      },
-      
-    });
-
-    frontendAppVersion2.addMetadata('aws:cdk:cloudformation:tags', {
-      VersionLabel: appVersionLabel,
-    });
-
-    
-
-    
-
-    //frontendAppVersion.addPropertyOverride("Properties.VersionLabel", appVersionLabel);
 
     frontendAppVersion.addDependency(frontendApp);
     frontendAppVersion.node.addDependency(asset);
 
-    
+
 
     // Create an Elastic Beanstalk environment.
-    const webAppEnv = new elasticbeanstalk.CfnEnvironment(this, "ElasticBeanstalkEnvironment", {
+    const webAppEnv = new elasticbeanstalk.CfnEnvironment(this, "EbEnvironmentDocqaiFrontend", {
       //solutionStackName: '64bit Amazon Linux 2 v3.4.1 running Docker 19.03.13',
       solutionStackName: "64bit Amazon Linux 2 v3.5.7 running Docker", // @see https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.docker
       //platformVersion: '3.4.1',
       environmentName: paramEnvironmentName.valueAsString,
       description: "Environment for the Docq AI frontend application",
       tier: environmentTiers.WebServer,
-     
+
 
       //instanceType: 't3.small',
       applicationName: appName,
@@ -241,13 +221,13 @@ export class DocqStack extends cdk.Stack {
         {
           namespace: 'aws:ec2:instances',
           optionName: 'InstanceTypes',
-          value: props!.ebEnvProps?.ec2InstanceTypes ?? "t3.medium",
+          value: props!.ebEnvProps?.ec2InstanceTypes ? `${props!.ebEnvProps?.ec2InstanceTypes},t3.medium` : 't3.medium',
         },
         {
           namespace: 'aws:elasticbeanstalk:environment',
           optionName: 'EnvironmentType',
           value: EnvironmentType.SingleInstance,
-        }, 
+        },
         {
           namespace: 'aws:elasticbeanstalk:environment:proxy',
           optionName: 'ProxyServer',
@@ -286,6 +266,133 @@ export class DocqStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'AppName', {
       value: frontendApp.applicationName!.toString(),
     });
+
+
+    const appName2 = `ml-model-huggingface-app`;
+
+    const huggingfaceAsset = new assets.Asset(this, 'huggingfaceDockerRunAwsJsonZip', { // uploads into a CDK assets bucket
+      path: path.join(__dirname, "dockerrun-huggingface"),
+
+    });
+
+    const mlModelHuggingfaceApp = new elasticbeanstalk.CfnApplication(this, 'MlModelHuggingfaceApplication', {
+      applicationName: appName2,
+      description: 'Huggingface ML Model using the HazyResearch Manifest wrapper',
+    });
+
+    const mlModelHuggingfaceAppVersion = new elasticbeanstalk.CfnApplicationVersion(this, 'MlModelHuggingfaceApplicationVersion', {
+      applicationName: mlModelHuggingfaceApp.ref,
+      sourceBundle: {
+        s3Bucket: huggingfaceAsset.bucket.bucketName,
+        //s3Key: `apps/${appName}/Dockerrun.aws.json`,
+        s3Key: `${huggingfaceAsset.s3ObjectKey}`,
+      },
+
+    });
+
+    mlModelHuggingfaceAppVersion.addDependency(mlModelHuggingfaceApp);
+    frontendAppVersion.node.addDependency(huggingfaceAsset);
+
+    const huggingfaceAppEnv = new elasticbeanstalk.CfnEnvironment(this, "EbEnvironmentHuggingface", {
+      //solutionStackName: '64bit Amazon Linux 2 v3.4.1 running Docker 19.03.13',
+      solutionStackName: "64bit Amazon Linux 2 v3.5.7 running Docker", // @see https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.docker
+      //platformVersion: '3.4.1',
+      environmentName: "ml-model-huggingface-env",
+      description: "Huggingface ML Model using the HazyResearch Manifest wrapper",
+      tier: environmentTiers.WebServer,
+
+
+      //instanceType: 't3.small',
+      applicationName: appName2,
+      versionLabel: mlModelHuggingfaceAppVersion.ref, // specify the version of the application that you want to deploy
+      optionSettings: [ // @see https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html
+        {
+          namespace: 'aws:autoscaling:launchconfiguration',
+          optionName: 'IamInstanceProfile',
+          value: instanceProfile.instanceProfileName,
+        },
+        {
+          namespace: 'aws:autoscaling:launchconfiguration',
+          optionName: 'RootVolumeSize',
+          value: '250', // in GB. with what ever the default is for t3.2xLarge, Docker pull in fails with disk space error
+        },
+        {
+          namespace: 'aws:autoscaling:asg',
+          optionName: 'MinSize',
+          value: props!.ebEnvProps?.autoscaleMinSize?.toString() ?? '1',
+        },
+        {
+          namespace: 'aws:autoscaling:asg',
+          optionName: 'MaxSize',
+          value: props!.ebEnvProps?.autoscaleMaxSize?.toString() ?? "1",
+        },
+        {
+          namespace: 'aws:ec2:instances',
+          optionName: 'InstanceTypes',
+          value: `t3.2xlarge`,
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:environment',
+          optionName: 'EnvironmentType',
+          value: EnvironmentType.SingleInstance,
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:environment:proxy',
+          optionName: 'ProxyServer',
+          value: ProxyServer.Nginx,
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:application',
+          optionName: 'Application Healthcheck URL',
+          value: "/", // valid value ex: `/` (HTTP GET to root path),  `/health`, `HTTPS:443/`, `HTTPS:443/health`
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:application:environment',
+          optionName: 'RANDOM_VAR',
+          value: 'hello env var',
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:application:environment',
+          optionName: 'FLASK_PORT',
+          value: '80',
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:healthreporting:system',
+          optionName: 'SystemType',
+          value: 'enhanced',
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:cloudwatch:logs',
+          optionName: 'StreamLogs',
+          value: 'true',
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:cloudwatch:logs',
+          optionName: 'DeleteOnTerminate',
+          value: 'true',
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:cloudwatch:logs',
+          optionName: 'RetentionInDays',
+          value: '1',
+        },
+      ],
+    });
+
+    new cdk.CfnOutput(this, 'huggingfaceAppEnvEndpoint', {
+      value: `http://${huggingfaceAppEnv.attrEndpointUrl}`,
+    });
+
+
+    new cdk.CfnOutput(this, 'huggingfaceAppEnvCName', {
+      value: `http://${huggingfaceAppEnv.cnamePrefix}`,
+    });
+
+    new cdk.CfnOutput(this, 'huggingfaceAppEnvName', {
+      value: huggingfaceAppEnv.applicationName!.toString(),
+    });
+
+
 
   }
 }

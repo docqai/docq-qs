@@ -14,7 +14,7 @@ new DocqStack(app, 'DocqAppStack', {
     envName: "docqai-dev",
     autoscaleMinSize: 1,
     autoscaleMaxSize: 1,
-    ec2InstanceTypes: 't3.medium',
+    ec2InstanceTypes: 't3.large',
   },
 
 
