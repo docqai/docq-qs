@@ -11,9 +11,76 @@ import * as assets from 'aws-cdk-lib/aws-s3-assets';
 //import { SecurityGroup, Vpc } from "aws-cdk-lib/aws-ec2";
 //import * as efs from '@aws-cdk/aws-efs';
 
-export const environmentTier = {
-  WebServer: { name: 'WebServer', type: 'Standard' },
-  Worker: { name: 'Worker', type: 'SQS/HTTP' },
+
+export const ebEnvionmentOptionsValueMap = {
+
+  awsAutoscalingLaunchconfiguration: {
+    Namespace: "aws:autoscaling:launchconfiguration",
+    OptionNames: { IamInstanceProfile: "IamInstanceProfile" },
+  },
+
+  awsEc2Instances: {
+    Namespace: "aws:ec2:instances",
+    OptionNames: {
+      InstanceTypes: {
+        t3Medium: "t3.medium",
+      }
+    },
+  },
+
+  awsElasticbeanstalkEnvironment: {
+    Namespace: "aws:elasticbeanstalk:environment",
+    OptionNames: {
+      EnvironmentType: { LoadBalanced: "LoadBalanced", SingleInstance: "SingleInstance" },
+      /**
+       * IAM role name, path/name, or ARN
+       */
+      ServiceRole: "",
+      LoadBalancerType: {
+        Application: "application",
+        Classic: "classic",
+        Network: "network",
+      },
+      LoadBalancerIsShared: {
+        true: "true",
+        false: "false",
+      },
+    }
+  }
+}
+
+
+
+export type OptionSetting = { namespace: string, optionName: string, value: string };
+
+export type TierType = "Standard" | "SQS/HTTP";
+export type TierName = "WebServer" | "Worker";
+export type EnvironmentTier = { name: TierName, type: TierType }
+
+export enum EnvironmentType {
+  LoadBalanced = "LoadBalanced",
+  SingleInstance = "SingleInstance",
+}
+
+export enum ProxyServer {
+  Nginx = "nginx",
+  /**
+   * Amazon Linux AM and Docker w/DC only
+   */
+  None = "none",
+}
+
+const webServerTier: EnvironmentTier = { name: "WebServer", type: "Standard" };
+
+
+const workerTier: EnvironmentTier = { name: "Worker", type: "SQS/HTTP" };
+
+export const environmentTiers = {
+  WebServer: webServerTier,
+  /**
+   * @see https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features-managing-env-tiers.html
+   */
+  Worker: workerTier,
 }
 
 export interface EBEnvProps {
@@ -41,23 +108,31 @@ export class DocqStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: DocqStackProps) {
     super(scope, id, props);
 
+
+    const thisAccuntId = cdk.Stack.of(this).account;
+    const thisRegion = cdk.Stack.of(this).region;
+
+    const ebS3BucketName = `elasticbeanstalk-${thisRegion}-${thisAccuntId}`;
+    const ebS3Bucket = s3.Bucket.fromBucketName(this, 'ebS3Bucket', ebS3BucketName);
+
+
     const paramAppName = new cdk.CfnParameter(this, 'paramAppName', {
       type: 'String',
       description: 'The name of the application in Elastic Beanstalk',
       default: props!.appName,
     });
-    
+
     const paramEnvironmentName = new cdk.CfnParameter(this, 'environmentName', {
       type: 'String',
       description: 'The name of the environment in Elastic Beanstalk',
       default: props?.ebEnvProps?.envName,
     });
 
-    
-    
+
+
     const appName = paramAppName.valueAsString;
 
-    const app = new elasticbeanstalk.CfnApplication(this, 'DocqApplication', {
+    const frontendApp = new elasticbeanstalk.CfnApplication(this, 'DocqApplication', {
       applicationName: appName,
       description: 'docqai application',
     });
@@ -94,33 +169,60 @@ export class DocqStack extends cdk.Stack {
 
     const asset = new assets.Asset(this, 'DockerRunAwsJsonZip', { // uploads into a CDK assets bucket
       path: path.join(__dirname, props?.containerConfigFolder || "dockerrun"),
+      
     });
 
-    const appVersion = new elasticbeanstalk.CfnApplicationVersion(this, 'AppVersion', {
-      applicationName: appName,
+
+    const appVersionLabel = `${appName}-v1.0.0`;
+    const frontendAppVersion = new elasticbeanstalk.CfnApplicationVersion(this, 'AppVersion', {
+      applicationName: frontendApp.ref,
       sourceBundle: {
         s3Bucket: asset.bucket.bucketName,
         //s3Key: `apps/${appName}/Dockerrun.aws.json`,
         s3Key: `${asset.s3ObjectKey}`,
       },
+      
     });
 
-    appVersion.addDependency(app);
-    appVersion.node.addDependency(asset);
+    const frontendAppVersion2 = new elasticbeanstalk.CfnApplicationVersion(this, 'AppVersion2', {
+      applicationName: frontendApp.ref,
+      sourceBundle: {
+        s3Bucket: asset.bucket.bucketName,
+        //s3Key: `apps/${appName}/Dockerrun.aws.json`,
+        s3Key: `${asset.s3ObjectKey}`,
+      },
+      
+    });
 
+    frontendAppVersion2.addMetadata('aws:cdk:cloudformation:tags', {
+      VersionLabel: appVersionLabel,
+    });
+
+    
+
+    
+
+    //frontendAppVersion.addPropertyOverride("Properties.VersionLabel", appVersionLabel);
+
+    frontendAppVersion.addDependency(frontendApp);
+    frontendAppVersion.node.addDependency(asset);
+
+    
 
     // Create an Elastic Beanstalk environment.
-    const environment = new elasticbeanstalk.CfnEnvironment(this, 'ElasticBeanstalkEnvironment', {
+    const webAppEnv = new elasticbeanstalk.CfnEnvironment(this, "ElasticBeanstalkEnvironment", {
       //solutionStackName: '64bit Amazon Linux 2 v3.4.1 running Docker 19.03.13',
       solutionStackName: "64bit Amazon Linux 2 v3.5.7 running Docker", // @see https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.docker
       //platformVersion: '3.4.1',
       environmentName: paramEnvironmentName.valueAsString,
-      tier: environmentTier.WebServer,
+      description: "Environment for the Docq AI frontend application",
+      tier: environmentTiers.WebServer,
+     
 
       //instanceType: 't3.small',
       applicationName: appName,
-      versionLabel: appVersion.ref,
-      optionSettings: [
+      versionLabel: frontendAppVersion.ref, // specify the version of the application that you want to deploy
+      optionSettings: [ // @see https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html
         {
           namespace: 'aws:autoscaling:launchconfiguration',
           optionName: 'IamInstanceProfile',
@@ -141,17 +243,48 @@ export class DocqStack extends cdk.Stack {
           optionName: 'InstanceTypes',
           value: props!.ebEnvProps?.ec2InstanceTypes ?? "t3.medium",
         },
+        {
+          namespace: 'aws:elasticbeanstalk:environment',
+          optionName: 'EnvironmentType',
+          value: EnvironmentType.SingleInstance,
+        }, 
+        {
+          namespace: 'aws:elasticbeanstalk:environment:proxy',
+          optionName: 'ProxyServer',
+          value: ProxyServer.Nginx,
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:application',
+          optionName: 'Application Healthcheck URL',
+          value: "/", // valid value ex: `/` (HTTP GET to root path),  `/health`, `HTTPS:443/`, `HTTPS:443/health`
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:application:environment',
+          optionName: 'RANDOM_VAR',
+          value: 'hello env var',
+        },
+        {
+          namespace: 'aws:elasticbeanstalk:application:environment',
+          optionName: 'RANDOM_VAR2',
+          value: 'hello env var 2',
+        },
+
       ],
     });
 
-    //environment.addDependency(app);
+    webAppEnv.addDependency(frontendAppVersion);
 
-    new cdk.CfnOutput(this, 'AppUrlHttp', {
-      value: `http://${environment.attrEndpointUrl}`,
+    new cdk.CfnOutput(this, 'AppEnvEndpoint', {
+      value: `http://${webAppEnv.attrEndpointUrl}`,
     });
 
-    new cdk.CfnOutput(this, 'AppUrlHttps', {
-      value: `https://${environment.attrEndpointUrl}`,
+
+    new cdk.CfnOutput(this, 'AppEnvCName', {
+      value: `http://${webAppEnv.cnamePrefix}`,
+    });
+
+    new cdk.CfnOutput(this, 'AppName', {
+      value: frontendApp.applicationName!.toString(),
     });
 
   }

@@ -23,3 +23,8 @@ This CDK project is design to also generate a CloudFormation template that we ca
 ## Dockerrun.aws.json ref
 
 <https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/single-container-docker-configuration.html#docker-configuration.no-compose>
+
+
+## Notes
+
+- EB bucket - EB creates a bucket in an account that launches EB. This is used for assets and logs. The bucket name follows the following convention "elasticbeanstalk-<region>-<account id>"
