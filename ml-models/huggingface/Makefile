@@ -5,7 +5,7 @@ build-image:
 
 run-image:
 # default huggingface model. override --entrypoint to run other models. See https://github.com/HazyResearch/manifest#other-models
-	docker run -p 8001:80 ${reponame}:latest
+	docker run ${reponame}:latest
 
 publish-image:
 	docker push ${reponame}:latest
